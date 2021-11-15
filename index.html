@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+    <title>Node-Mongo-Crud</title>
+</head>
+<body>
+    <h1>Im a software engineer</h1>
+    <form action="/addProduct" method="post">
+        <input type="text" placeholder="name" id="name">
+        <input type="text" placeholder="price" id="price">
+        <input type="text" placeholder="quantity" id="quantity">
+        <button type="submit">Add Product</button>
+    </form>
+
+    <div id="products"></div>
+    <div id="update"></div>
+    <script>
+        function loadAllProducts(){
+            fetch('/product')
+            .then(res=>res.json())
+            .then(products=>{
+                console.log(products);
+                const container = document.getElementById('products');
+                container.innerHTML= '';
+                products.forEach(product=>{
+                    const item = document.createElement('p');
+                    item.innerHTML = `<strong>${product.name}</strong> Price: ${product.price} Quantity: ${product.quantity} 
+                    
+                    <button onclick="loadProduct('${product._id}')">Update</button>
+                    <button onclick="deleteProduct(event,'${product._id}')">Remove</button>`;
+                    container.appendChild(item);
+                });
+            })
+           }
+           loadAllProducts();
+    function deleteProduct(event,id){
+        console.log(event.target);
+        fetch(`/delete/${id}`,{
+            method:'DELETE'
+        })
+        .then(res=>res.json())
+        .then(result=>{
+            if(result){
+                event.target.parentNode.style.display = 'none'; 
+            }
+            console.log('deleted succesfully')})
+    }
+    function updateProduct(id){
+      const price = document.getElementById('price').value;
+      const quantity = document.getElementById('quantity').value;
+      const product = {id,price,quantity};
+      fetch(`/update/${id}`,{
+          method:'PATCH',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(product),
+
+      })
+      .then(res=>res.json())
+      .then(data=>{
+          if(data){
+              loadAllProducts();
+              const update = document.getElementById('update');
+            
+              update.innerHTML='';
+          }
+          console.log('updated');})
+    }
+    function loadProduct(id){
+        fetch(`/product/${id}`)
+        .then(res=>res.json())
+        .then(result=>{
+            console.log(result);
+            const update = document.getElementById('update');
+            
+            update.innerHTML=`
+            <h1>Update: ${result._id}</h1>
+            Price :<input type="text" value="${result.price}" id="price">
+            Quantity: <input type="text" value="${result.quantity}" id="quantity">
+            <br/>
+            <button onclick="updateProduct('${result._id}')">Submit</button>
+            `;
+           
+
+        });
+    }
+ 
+ 
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
+
+</body>
+</html>
